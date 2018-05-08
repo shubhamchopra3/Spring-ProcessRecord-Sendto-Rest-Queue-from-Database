@@ -1,0 +1,61 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+	<bean id="Service" class="main.Service" />
+	<bean id="Order_Book" class="main.Order_Book" />
+	<bean id="sqlComponent" class="org.apache.camel.component.sql.SqlComponent">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<bean id="RestletComponent" class="org.restlet.Component" />
+	<bean id="RestletComponentService" class="org.apache.camel.component.restlet.RestletComponent">
+		<constructor-arg index="0">
+			<ref bean="RestletComponent" />
+		</constructor-arg>
+	</bean>
+	<camelContext xmlns="http://camel.apache.org/schema/spring">
+		<propertyPlaceholder id="placeholder" location="classpath:sql.properties" />
+
+		<restConfiguration bindingMode="json" component="servlet" />
+		<rest path="/books">
+			<!-- <get uri="/getAll" outType="main.Order_Book[]" produces="application/json"> 
+				<to uri="bean:Service?method=findBooks" /> </get> -->
+			<get uri="/getRecord" produces="application/json">
+				<to uri="bean:Service?method=returnRecord" />
+			</get>
+		</rest>
+
+		<!-- Inserting into Queue -->
+		<!-- <route> <from uri="timer://foo?repeatCount=1" /> <setBody> <constant>{"id":"1","name":"The 
+			Interpretation of Dreams","author":"Sigmund Freud"} </constant> </setBody> 
+			<to uri="activemq:inboundQueue" /> </route> -->
+
+		<!-- From Queue to Database -->
+		<!-- <route> <from uri="activemq:inboundQueue" /> <transform> <method ref="databaseService" 
+			method="jsonToHashMap(${body})" /> </transform> <to uri="sqlComponent:{{sql.insertNewBook}}" 
+			/> </route> -->
+
+		<!-- From Database to Queue -->
+		<route id="DBtoQueue">
+			<from uri="sqlComponent:{{sql.selectOpenBook}}" />
+			<transform>
+				<method ref="Service" method="updateValues(${body})" />
+			</transform>
+			<to uri="sqlComponent:{{sql.updateStatus}}" />
+			<to uri="sqlComponent:{{sql.updateDate}}" />
+			<to uri="sqlComponent:{{sql.commit}}" />
+			<transform>
+				<method ref="Service" method="mapToString(${body})" />
+			</transform>
+			<to uri="activemq:outboundQueue" />
+		</route>
+		
+		<route>
+			<from uri="timer://clearMap?fixedRate=true&amp;period=60000" />
+			<to uri="bean:Service?method=clearHashmap" />
+		</route>
+		 
+		<!-- <route> <from uri="direct:getAll" /> <transform> <method ref="Service" 
+			method="findBooks" /> </transform> <to uri="http://localhost:8080/books/getAll" 
+			/> </route> -->
+	</camelContext>
+</beans>
