@@ -12,9 +12,11 @@
 			<ref bean="RestletComponent" />
 		</constructor-arg>
 	</bean>
+	
+	
 	<camelContext xmlns="http://camel.apache.org/schema/spring">
 		<propertyPlaceholder id="placeholder" location="classpath:sql.properties" />
-
+		<!--Camel route to send data from database to rest service use url  http://localhost:8080/books/getRecord  only recods with status as open are sent -->
 		<restConfiguration bindingMode="json" component="servlet" />
 		<rest path="/books">
 			<!-- <get uri="/getAll" outType="main.Order_Book[]" produces="application/json"> 
