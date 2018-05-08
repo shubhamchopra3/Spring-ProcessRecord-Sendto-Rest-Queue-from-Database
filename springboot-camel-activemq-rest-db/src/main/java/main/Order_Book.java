@@ -5,7 +5,7 @@ import java.sql.Date;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
+//creates table in databse with id as primary key
 @Entity
 @Table(name = "order_book")
 public class Order_Book {
