@@ -14,7 +14,7 @@ import com.google.gson.Gson;
 public class Service {
 	@Autowired
 	Repository repo1;
-	List<Map<String, Object>> common_mp1 = new ArrayList<Map<String, Object>>();
+	List<Map<String, Object>> common_mp1 = new ArrayList<Map<String, Object>>();  //list of hashmap to store multiple records from databse each record is a hashmap, if multiple records are processed it needs to be stored as list of hashmap
 	/*
 	public void printMessage(Map<String, Object> data) {
 		System.out.println(data.get("order_date").getClass());
@@ -30,6 +30,7 @@ public class Service {
         return repo1.findAll();
     }
 	*/
+	//since queue accepts only string therefore converting hashmap data to string 
 	public String mapToString(Map<String, Object> data) {
 		String msg="{";
 		int i=0;
@@ -45,7 +46,10 @@ public class Service {
 		msg += "}";
 		return  msg;
 	}
+	//This function is used to process data coming from database, if multiple records are selected each record is a hashmap, one by one each hashmap is sent to this function by default by camel
 	public Map<String, Object> updateValues(Map<String, Object> data) {
+		//here we are trying to modify expected_delivery_date as = order_date+3
+		//also we are updating the status from open to processed
 		int dayAdd = 3;
 		String newStatus = "PROCESSED";
 		
@@ -71,7 +75,7 @@ public class Service {
 	public List<Map<String, Object>> returnRecord() {
 		return common_mp1;
 	}
-	
+	//this function is called to clear hashmap as we do not want to give rest output of processed data again and again
 	public void clearHashmap() {
 		common_mp1.clear();
 	}
