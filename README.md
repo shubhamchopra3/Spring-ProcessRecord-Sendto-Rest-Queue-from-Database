@@ -1,12 +1,19 @@
 # Spring-ProcessRecord-Sendto-Rest-Queue-from-Database
-Spring Boot and Apache camel to get data from database, process the data and send the processed data to queue and Rest services. Only processed records in the last 1 minute are shown in rest. Every 1 minute, the variable which stores processed records to be shown in rest, is flushed and cleared.
 
+* Spring Boot and Apache camel to get data from database, process the data and send the processed data to queue and Rest services. 
+* Only processed records in the last 1 minute are shown in rest. 
+* Every 1 minute, the variable which stores processed records to be shown in rest, is flushed and cleared.
+
+```sql
 CREATE TABLE ORDER_BOOK (ORDER_ID varchar(20),Customer_id varchar(20),ITEM_ID varchar(20),ITEM_QUANTITY INT,ITEM_PRICE INT,TOTAL_AMOUNT INT,ORDER_DATE DATE,EXPECTED_DELIVERY_DATE DATE,STATUS VARCHAR(20));
+```
 
+```sql
 INSERT INTO ORDER_BOOK VALUES ('10','30','40',51,21,101,Current_timestamp,null,'OPEN');
+```
+then use  ```http://localhost:8080/books/getRecord``` in postman to get the required result
 
-then use  http://localhost:8080/books/getRecord in postman to get the required result
-
+```json
 Output -
 [
     {
@@ -21,3 +28,4 @@ Output -
         "STATUS": "PROCESSED"
     }
 ]
+```
